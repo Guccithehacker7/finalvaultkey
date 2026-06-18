@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Admin Dashboard</h1>
+<form id="revoke-form">
+  <label>Certificate Serial Number</label>
+  <input type="text" id="serial-number" required />
+  <button type="submit">Revoke Certificate</button>
+</form>
+<section class="output" id="revoke-output"></section>
+<div>
+  <h2>Audit Logs</h2>
+  <button id="refresh-logs">Refresh Logs</button>
+  <div id="audit-logs" class="table-container"></div>
+</div>
+{% endblock %}

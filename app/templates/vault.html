@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Vault Management</h1>
+<div class="split">
+  <div>
+    <form id="vault-form">
+      <label>Site Name</label>
+      <input type="text" id="site-name" required />
+      <label>Password</label>
+      <input type="password" id="password" required />
+      <button type="submit">Store Vault Entry</button>
+    </form>
+  </div>
+  <div>
+    <h2>Stored Entries</h2>
+    <div id="vault-entries" class="list"></div>
+  </div>
+</div>
+<section class="output" id="vault-output"></section>
+{% endblock %}

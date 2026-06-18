@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="hero">
+  <h1>VaultKey Enterprise</h1>
+  <p>Secure PKI-based identity, password vault, and digital signing platform.</p>
+  <div class="grid">
+    <div class="card">
+      <h2>Register</h2>
+      <p>Create a new user identity and generate your X.509 certificate.</p>
+      <a class="button" href="/register">Register</a>
+    </div>
+    <div class="card">
+      <h2>Login</h2>
+      <p>Authenticate with your certificate and receive a secure JWT session.</p>
+      <a class="button" href="/login">Login</a>
+    </div>
+    <div class="card">
+      <h2>Vault</h2>
+      <p>Store encrypted credentials and review vault entries.</p>
+      <a class="button" href="/vault">Vault</a>
+    </div>
+    <div class="card">
+      <h2>Documents</h2>
+      <p>Sign and verify documents using RSA-PSS and SHA-256.</p>
+      <a class="button" href="/documents">Documents</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Document Signing</h1>
+<div class="split">
+  <div>
+    <form id="sign-form">
+      <label>File Name</label>
+      <input type="text" id="sign-file-name" required />
+      <label>Document Hash (SHA-256)</label>
+      <textarea id="sign-document-hash" rows="5" required></textarea>
+      <button type="submit">Sign Document</button>
+    </form>
+    <section class="output" id="sign-output"></section>
+  </div>
+  <div>
+    <form id="verify-form">
+      <label>Document Hash</label>
+      <textarea id="verify-document-hash" rows="5" required></textarea>
+      <label>Signature (Base64)</label>
+      <textarea id="verify-signature" rows="5" required></textarea>
+      <label>Certificate PEM</label>
+      <textarea id="verify-certificate-pem" rows="10" required></textarea>
+      <button type="submit">Verify Signature</button>
+    </form>
+    <section class="output" id="verify-output"></section>
+  </div>
+</div>
+{% endblock %}

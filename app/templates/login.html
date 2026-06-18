@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Login with Certificate</h1>
+<form id="login-form">
+  <label>Certificate PEM</label>
+  <textarea id="certificate-pem" rows="10" required></textarea>
+  <button type="submit">Login</button>
+</form>
+<section class="output" id="login-output"></section>
+{% endblock %}

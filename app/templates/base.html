@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>VaultKey Enterprise</title>
+    <link rel="stylesheet" href="{{ url_for('frontend.static', filename='css/style.css') }}" />
+  </head>
+  <body>
+    <header class="navbar">
+      <div class="container">
+        <a class="brand" href="/">VaultKey Enterprise</a>
+        <nav>
+          <a href="/register">Register</a>
+          <a href="/login">Login</a>
+          <a href="/vault">Vault</a>
+          <a href="/documents">Documents</a>
+          <a href="/admin">Admin</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="container">
+      {% block content %}{% endblock %}
+    </main>
+
+    <footer class="footer">
+      <div class="container">Secure PKI-based identity, password vault, and signing.</div>
+    </footer>
+
+    <script src="{{ url_for('frontend.static', filename='js/main.js') }}"></script>
+  </body>
+</html>
