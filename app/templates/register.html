@@ -1,13 +1,38 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h1>Register User</h1>
-<form id="register-form">
-  <label>Username</label>
-  <input type="text" name="username" id="username" required />
-  <label>Email</label>
-  <input type="email" name="email" id="email" required />
-  <button type="submit">Register</button>
-</form>
-<section class="output" id="register-output"></section>
+<div class="auth-page">
+  <div class="auth-card">
+
+    <div class="auth-header">
+      <div class="auth-icon">✨</div>
+      <h1>Create your identity</h1>
+      <p>Register to receive your X.509 certificate &amp; RSA key pair</p>
+    </div>
+
+    <form id="register-form">
+      <label>Username</label>
+      <input type="text" id="username" name="username" required autocomplete="off" placeholder="e.g. alice" />
+
+      <label>Email Address</label>
+      <input type="email" id="email" name="email" required autocomplete="off" placeholder="alice@example.com" />
+
+      <label>Password</label>
+      <input type="password" id="reg-password" name="password" required autocomplete="new-password" placeholder="Minimum 8 characters" />
+      <div class="strength-wrap">
+        <div class="strength-track"><div class="strength-bar" id="strength-bar"></div></div>
+        <span class="strength-label" id="strength-label">—</span>
+      </div>
+
+      <label>Confirm Password</label>
+      <input type="password" id="reg-password-confirm" name="confirm" required autocomplete="new-password" placeholder="Repeat password" />
+
+      <button type="submit" class="btn-full" style="margin-top:6px">Register &amp; Generate Certificate →</button>
+    </form>
+
+    <section class="output" id="register-output"></section>
+
+    <p class="auth-footer">Already have an account? <a href="/login">Login here</a></p>
+  </div>
+</div>
 {% endblock %}

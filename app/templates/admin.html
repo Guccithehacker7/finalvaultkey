@@ -1,16 +1,27 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h1>Admin Dashboard</h1>
-<form id="revoke-form">
-  <label>Certificate Serial Number</label>
-  <input type="text" id="serial-number" required />
-  <button type="submit">Revoke Certificate</button>
-</form>
-<section class="output" id="revoke-output"></section>
-<div>
-  <h2>Audit Logs</h2>
-  <button id="refresh-logs">Refresh Logs</button>
-  <div id="audit-logs" class="table-container"></div>
+<div class="page-header">
+  <h1>🛡️ Admin Dashboard</h1>
+  <p>Revoke certificates and review the full platform audit trail</p>
+</div>
+
+<div class="admin-grid">
+  <div>
+    <form id="revoke-form">
+      <label>Certificate Serial Number</label>
+      <input type="text" id="serial-number" required placeholder="Paste serial number..." />
+      <button type="submit" style="background:#ef4444; width:100%">Revoke Certificate</button>
+    </form>
+    <section class="output" id="revoke-output"></section>
+  </div>
+
+  <div class="table-container">
+    <div class="list-header">
+      <h2>Audit Log</h2>
+      <button id="refresh-logs" style="font-size:0.78rem; padding:5px 14px; background:var(--surface-3)">↻ Refresh</button>
+    </div>
+    <div id="audit-logs"></div>
+  </div>
 </div>
 {% endblock %}

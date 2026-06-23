@@ -1,21 +1,57 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h1>Vault Management</h1>
+<div class="page-header">
+  <h1>🔐 Password Vault</h1>
+  <p>Store and retrieve encrypted credentials — decrypted only on demand</p>
+</div>
+
+<!-- Password Generator -->
+<div class="generator-panel">
+  <div class="generator-head">
+    <span class="generator-title">🎲 Password Generator</span>
+    <button id="gen-toggle" class="btn-ghost-sm" type="button">Show ▾</button>
+  </div>
+  <div id="generator-body" style="display:none">
+    <div class="gen-output-row">
+      <input type="text" id="gen-output" readonly placeholder="Click Generate…" />
+      <button type="button" id="gen-copy" class="btn btn-outline" style="padding:10px 16px; white-space:nowrap">Copy</button>
+    </div>
+    <div class="gen-controls">
+      <label>Length: <strong id="gen-len-label">16</strong></label>
+      <input type="range" id="gen-length" min="8" max="64" value="16" class="range-input" />
+    </div>
+    <div class="gen-options">
+      <label class="gen-opt"><input type="checkbox" id="gen-upper" checked /> Uppercase A–Z</label>
+      <label class="gen-opt"><input type="checkbox" id="gen-lower" checked /> Lowercase a–z</label>
+      <label class="gen-opt"><input type="checkbox" id="gen-nums" checked /> Numbers 0–9</label>
+      <label class="gen-opt"><input type="checkbox" id="gen-syms" checked /> Symbols !@#$…</label>
+    </div>
+    <button type="button" id="gen-generate" class="btn btn-primary" style="width:100%">Generate Password</button>
+  </div>
+</div>
+
+<!-- Vault split -->
 <div class="split">
   <div>
     <form id="vault-form">
-      <label>Site Name</label>
-      <input type="text" id="site-name" required />
+      <label>Site / Service Name</label>
+      <input type="text" id="site-name" required placeholder="e.g. github.com" />
+      <label>Username / Email <span style="color:var(--text-3); font-weight:400">(optional)</span></label>
+      <input type="text" id="vault-username" placeholder="e.g. alice@gmail.com" />
       <label>Password</label>
-      <input type="password" id="password" required />
-      <button type="submit">Store Vault Entry</button>
+      <input type="password" id="password" required placeholder="Enter or generate above" />
+      <button type="submit" class="btn-full">Store Securely →</button>
     </form>
+    <section class="output" id="vault-output"></section>
   </div>
-  <div>
-    <h2>Stored Entries</h2>
-    <div id="vault-entries" class="list"></div>
+
+  <div class="list">
+    <div class="list-header">
+      <h2>Stored Entries</h2>
+      <span class="list-count" id="vault-count">0</span>
+    </div>
+    <div id="vault-entries"></div>
   </div>
 </div>
-<section class="output" id="vault-output"></section>
 {% endblock %}

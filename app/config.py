@@ -2,24 +2,26 @@ import os
 
 
 class Config:
-    """Application configuration loaded from environment variables."""
-
+    # ── Database ──────────────────────────────────────────────
+    # Defaults to SQLite for local dev. Set VAULTKEY_DATABASE_URI to a
+    # PostgreSQL URL for staging/production.
     SQLALCHEMY_DATABASE_URI = os.getenv(
         "VAULTKEY_DATABASE_URI",
-        "postgresql://vaultkey:change_me@localhost:5432/vaultkey",
+        "sqlite:///vaultkey.db",
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
-    JWT_SECRET_KEY = os.getenv("VAULTKEY_JWT_SECRET", "replace-with-strong-secret")
+    # ── JWT ───────────────────────────────────────────────────
+    JWT_SECRET_KEY = os.getenv("VAULTKEY_JWT_SECRET", "dev-secret-key-change-this-in-production-32b")
     JWT_ALGORITHM = os.getenv("VAULTKEY_JWT_ALGORITHM", "HS256")
     JWT_ACCESS_TOKEN_EXPIRES = int(os.getenv("VAULTKEY_JWT_ACCESS_TOKEN_EXPIRES", "3600"))
 
+    # ── PKI / Key storage ─────────────────────────────────────
     CA_CERT_PATH = os.getenv("VAULTKEY_CA_CERT_PATH", "keys/ca_cert.pem")
     CA_KEY_PATH = os.getenv("VAULTKEY_CA_KEY_PATH", "keys/ca_key.pem")
-
-    VAULT_MASTER_PASSWORD = os.getenv("VAULTKEY_VAULT_PASSWORD", "replace-with-strong-password")
-    PRIVATE_KEY_PASSPHRASE = os.getenv("VAULTKEY_PRIVATE_KEY_PASSPHRASE", "replace-with-strong-passphrase")
     PRIVATE_KEY_STORAGE_PATH = os.getenv("VAULTKEY_PRIVATE_KEY_STORAGE_PATH", "keys/{user_id}_private.pem")
-    AES_KEY_LENGTH = 32
+    PRIVATE_KEY_PASSPHRASE = os.getenv("VAULTKEY_PRIVATE_KEY_PASSPHRASE", "dev-passphrase-change-in-prod")
 
-    # In production, ensure the JWT secret, DB URI, and master secrets are injected through secure environment variables.
+    # ── Vault encryption ──────────────────────────────────────
+    VAULT_MASTER_PASSWORD = os.getenv("VAULTKEY_VAULT_PASSWORD", "dev-vault-password-change-in-prod")
+    AES_KEY_LENGTH = 32

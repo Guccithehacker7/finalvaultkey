@@ -1,27 +1,32 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h1>Document Signing</h1>
+<div class="page-header">
+  <h1>✍️ Document Signing</h1>
+  <p>Sign document hashes with your RSA private key, or verify any signature with a certificate</p>
+</div>
+
 <div class="split">
   <div>
     <form id="sign-form">
       <label>File Name</label>
-      <input type="text" id="sign-file-name" required />
-      <label>Document Hash (SHA-256)</label>
-      <textarea id="sign-document-hash" rows="5" required></textarea>
-      <button type="submit">Sign Document</button>
+      <input type="text" id="sign-file-name" required placeholder="e.g. contract_2025.pdf" />
+      <label>Document Hash (SHA-256 hex)</label>
+      <textarea id="sign-document-hash" rows="4" required placeholder="e3b0c44298fc1c149afb..."></textarea>
+      <button type="submit" class="btn-full">Sign Document →</button>
     </form>
     <section class="output" id="sign-output"></section>
   </div>
+
   <div>
     <form id="verify-form">
       <label>Document Hash</label>
-      <textarea id="verify-document-hash" rows="5" required></textarea>
+      <textarea id="verify-document-hash" rows="3" required placeholder="e3b0c44298fc1c149afb..."></textarea>
       <label>Signature (Base64)</label>
-      <textarea id="verify-signature" rows="5" required></textarea>
-      <label>Certificate PEM</label>
-      <textarea id="verify-certificate-pem" rows="10" required></textarea>
-      <button type="submit">Verify Signature</button>
+      <textarea id="verify-signature" rows="4" required placeholder="Base64-encoded signature..."></textarea>
+      <label>Signer's Certificate PEM</label>
+      <textarea id="verify-certificate-pem" rows="7" required placeholder="-----BEGIN CERTIFICATE-----&#10;...&#10;-----END CERTIFICATE-----"></textarea>
+      <button type="submit" class="btn-full">Verify Signature →</button>
     </form>
     <section class="output" id="verify-output"></section>
   </div>

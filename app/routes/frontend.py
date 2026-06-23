@@ -18,6 +18,11 @@ def login_page():
     return render_template("login.html")
 
 
+@frontend_bp.route("/dashboard")
+def dashboard_page():
+    return render_template("dashboard.html")
+
+
 @frontend_bp.route("/vault")
 def vault_page():
     return render_template("vault.html")

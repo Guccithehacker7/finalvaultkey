@@ -1,30 +1,131 @@
 {% extends "base.html" %}
 
 {% block content %}
+
+<!-- ── Hero ─────────────────────────────────────────── -->
 <section class="hero">
-  <h1>VaultKey Enterprise</h1>
-  <p>Secure PKI-based identity, password vault, and digital signing platform.</p>
-  <div class="grid">
-    <div class="card">
-      <h2>Register</h2>
-      <p>Create a new user identity and generate your X.509 certificate.</p>
-      <a class="button" href="/register">Register</a>
+  <div class="hero-badge">
+    <span class="hero-badge-dot"></span>
+    Enterprise PKI Platform
+  </div>
+
+  <h1>Secure by Design.<br>Trusted by Default.</h1>
+
+  <p class="hero-sub">
+    VaultKey gives your organization certificate-based identity,
+    an encrypted credential vault, and cryptographic document signing —
+    all in one hardened platform.
+  </p>
+
+  <div class="hero-actions">
+    <a href="/register" class="btn btn-primary">Get Started →</a>
+    <a href="/login" class="btn btn-outline">Login with Certificate</a>
+  </div>
+
+  <!-- Stats Strip -->
+  <div class="stats-strip">
+    <div class="stat-item">
+      <span class="stat-value">AES-256</span>
+      <span class="stat-label">Vault Encryption</span>
     </div>
-    <div class="card">
-      <h2>Login</h2>
-      <p>Authenticate with your certificate and receive a secure JWT session.</p>
-      <a class="button" href="/login">Login</a>
+    <div class="stat-item">
+      <span class="stat-value">X.509</span>
+      <span class="stat-label">PKI Identity</span>
     </div>
-    <div class="card">
-      <h2>Vault</h2>
-      <p>Store encrypted credentials and review vault entries.</p>
-      <a class="button" href="/vault">Vault</a>
+    <div class="stat-item">
+      <span class="stat-value">RSA-PSS</span>
+      <span class="stat-label">Document Signing</span>
     </div>
-    <div class="card">
-      <h2>Documents</h2>
-      <p>Sign and verify documents using RSA-PSS and SHA-256.</p>
-      <a class="button" href="/documents">Documents</a>
+    <div class="stat-item">
+      <span class="stat-value">JWT</span>
+      <span class="stat-label">Session Tokens</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-value">SHA-256</span>
+      <span class="stat-label">Hash Algorithm</span>
     </div>
   </div>
 </section>
+
+<!-- ── Features ──────────────────────────────────────── -->
+<section class="section">
+  <div class="section-header">
+    <span class="section-tag">Features</span>
+    <h2>Everything you need to stay secure</h2>
+    <p>From certificate issuance to encrypted storage and digital signatures,
+       VaultKey handles your entire security lifecycle.</p>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <div class="card-icon">🪪</div>
+      <h2>PKI Identity</h2>
+      <p>Each user receives a unique RSA key pair and an X.509 certificate signed by your private Root CA. No passwords, no shared secrets.</p>
+      <a href="/register" class="card-arrow">Register now <span>→</span></a>
+    </div>
+
+    <div class="card">
+      <div class="card-icon">🔐</div>
+      <h2>Encrypted Vault</h2>
+      <p>Credentials are encrypted with AES-256-GCM and PBKDF2 key derivation before they ever touch the database. Reveal only when needed.</p>
+      <a href="/vault" class="card-arrow">Open vault <span>→</span></a>
+    </div>
+
+    <div class="card">
+      <div class="card-icon">✍️</div>
+      <h2>Document Signing</h2>
+      <p>Sign document hashes with RSA-PSS and SHA-256. Anyone can verify authenticity using just your public certificate — no third party required.</p>
+      <a href="/documents" class="card-arrow">Sign documents <span>→</span></a>
+    </div>
+
+    <div class="card">
+      <div class="card-icon">🛡️</div>
+      <h2>Admin &amp; Audit</h2>
+      <p>Revoke certificates instantly and browse a full immutable audit log of every login, vault access, signing event, and certificate change.</p>
+      <a href="/admin" class="card-arrow">Admin panel <span>→</span></a>
+    </div>
+  </div>
+</section>
+
+<!-- ── How It Works ───────────────────────────────────── -->
+<section class="section">
+  <div class="section-header">
+    <span class="section-tag">How It Works</span>
+    <h2>Up and running in minutes</h2>
+    <p>No complex setup. Register, get your certificate, and authenticate immediately.</p>
+  </div>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">01</div>
+      <h3>Register</h3>
+      <p>Submit your username and email. VaultKey generates a 2048-bit RSA key pair and issues your X.509 certificate from the Root CA.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">02</div>
+      <h3>Save your keys</h3>
+      <p>Download and securely store your private key PEM and certificate. These are your credentials — guard them like a password.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">03</div>
+      <h3>Login</h3>
+      <p>Paste your certificate PEM to authenticate. VaultKey validates the signature and issues a time-limited JWT session token.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">04</div>
+      <h3>Use the platform</h3>
+      <p>Store encrypted credentials in your vault, sign documents, or manage certificates — all backed by your PKI identity.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ── CTA ────────────────────────────────────────────── -->
+<section class="section">
+  <div class="cta-banner">
+    <h2>Ready to take control of your identity?</h2>
+    <p>Create your account and receive your X.509 certificate in seconds.</p>
+    <a href="/register" class="btn btn-primary">Create Account →</a>
+  </div>
+</section>
+
 {% endblock %}
