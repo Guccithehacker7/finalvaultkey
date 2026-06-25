@@ -171,12 +171,6 @@ def register():
     db.session.add(certificate_record)
     db.session.commit()
 
-    user_private_pem = private_key.private_bytes(
-        encoding=serialization.Encoding.PEM,
-        format=serialization.PrivateFormat.PKCS8,
-        encryption_algorithm=serialization.NoEncryption(),
-    )
-
     log_audit(action="REGISTER", status="SUCCESS", user_id=user.id, ip_address=_get_client_ip())
 
     return jsonify({
@@ -187,7 +181,6 @@ def register():
             encoding=serialization.Encoding.PEM,
             format=serialization.PublicFormat.SubjectPublicKeyInfo,
         ).decode("utf-8"),
-        "private_key_pem": user_private_pem.decode("utf-8"),
     }), 201
 
 
