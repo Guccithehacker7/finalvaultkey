@@ -19,6 +19,10 @@
 
       <label>Password</label>
       <input type="password" id="reg-password" name="password" required autocomplete="new-password" placeholder="Minimum 8 characters" />
+      <div class="password-field-actions">
+        <button type="button" id="generate-password-btn" class="btn-ghost-sm">Generate Strong Password</button>
+        <button type="button" id="toggle-password-visibility" class="btn-ghost-sm">Show password</button>
+      </div>
       <div class="strength-wrap">
         <div class="strength-track"><div class="strength-bar" id="strength-bar"></div></div>
         <span class="strength-label" id="strength-label">—</span>

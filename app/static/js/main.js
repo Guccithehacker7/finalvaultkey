@@ -56,6 +56,60 @@ const attachRegister = () => {
     pwInput.addEventListener('input', () => updateStrength(pwInput.value));
   }
 
+  const generateBtn = document.getElementById('generate-password-btn');
+  const toggleBtn   = document.getElementById('toggle-password-visibility');
+  const confirmInput = document.getElementById('reg-password-confirm');
+
+  const generateStrongPassword = (length = 15) => {
+    const upper = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    const lower = 'abcdefghijklmnopqrstuvwxyz';
+    const digits = '0123456789';
+    const symbols = '!@#$%^&*()-_=+[]{}|;:,.<>?';
+    const charset = upper + lower + digits + symbols;
+
+    const randChars = (set, count) => {
+      const values = new Uint32Array(count);
+      crypto.getRandomValues(values);
+      return Array.from(values, (v) => set[v % set.length]).join('');
+    };
+
+    let password = [
+      randChars(upper, 1),
+      randChars(lower, 1),
+      randChars(digits, 1),
+      randChars(symbols, 1),
+      randChars(charset, Math.max(0, length - 4)),
+    ].join('');
+
+    const data = new Uint32Array(password.length);
+    crypto.getRandomValues(data);
+    const passwordArr = password.split('');
+    for (let i = passwordArr.length - 1; i > 0; i--) {
+      const j = data[i] % (i + 1);
+      [passwordArr[i], passwordArr[j]] = [passwordArr[j], passwordArr[i]];
+    }
+    return passwordArr.join('');
+  };
+
+  if (generateBtn && pwInput && confirmInput) {
+    generateBtn.addEventListener('click', () => {
+      const pwd = generateStrongPassword(15);
+      pwInput.value = pwd;
+      confirmInput.value = pwd;
+      updateStrength(pwd);
+      showMsg('register-output', 'Generated a strong password. You can edit it before submitting.');
+    });
+  }
+
+  if (toggleBtn && pwInput && confirmInput) {
+    toggleBtn.addEventListener('click', () => {
+      const show = pwInput.type === 'password';
+      pwInput.type = show ? 'text' : 'password';
+      confirmInput.type = show ? 'text' : 'password';
+      toggleBtn.textContent = show ? 'Hide password' : 'Show password';
+    });
+  }
+
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const btn = form.querySelector('button[type="submit"]');

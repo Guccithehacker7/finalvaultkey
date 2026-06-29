@@ -909,6 +909,17 @@ main.container { padding-top: 0; padding-bottom: 60px; }
   transform: none;
 }
 .btn-ghost-sm:hover { background: rgba(255,255,255,0.05); transform: none; box-shadow: none; }
+.password-field-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+  margin-bottom: 6px;
+}
+.password-field-actions .btn-ghost-sm {
+  padding: 10px 13px;
+  font-size: 0.82rem;
+}
 #generator-body { margin-top: 18px; }
 .gen-output-row { display: flex; gap: 10px; margin-bottom: 16px; }
 .gen-output-row input { margin-bottom: 0; font-family: 'Courier New', monospace; font-size: 0.88rem; flex: 1; }
