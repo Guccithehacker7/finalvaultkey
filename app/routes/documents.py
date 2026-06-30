@@ -1,5 +1,8 @@
 import base64
-from flask import Blueprint, current_app, g, jsonify, request
+import io
+import uuid
+
+from flask import Blueprint, current_app, g, jsonify, request, send_file
 
 from .. import db
 from app.crypto import (
@@ -9,7 +12,7 @@ from app.crypto import (
     validate_certificate,
     verify_signature,
 )
-from app.models import Certificate, DocumentSignature
+from app.models import Certificate, DocumentSignature, StoredDocument
 from app.routes.auth import token_required
 from app.utils.audit_logger import log_audit
 
@@ -28,9 +31,18 @@ def sign_document():
     payload = request.get_json(force=True)
     file_name = payload.get("file_name")
     document_hash = payload.get("document_hash")
+    file_content_b64 = payload.get("file_content_base64")
+    content_type = payload.get("content_type") or "application/octet-stream"
 
     if not file_name or not document_hash:
         return jsonify({"message": "file_name and document_hash are required"}), 400
+
+    file_bytes = None
+    if file_content_b64:
+        try:
+            file_bytes = base64.b64decode(file_content_b64)
+        except Exception:
+            return jsonify({"message": "Invalid file_content_base64"}), 400
 
     private_key_path = current_app.config["PRIVATE_KEY_STORAGE_PATH"].format(user_id=user.id)
     passphrase = current_app.config["PRIVATE_KEY_PASSPHRASE"].encode("utf-8")
@@ -45,6 +57,19 @@ def sign_document():
         signature=signature,
     )
     db.session.add(document_record)
+    db.session.flush()
+
+    if file_bytes:
+        db.session.add(
+            StoredDocument(
+                user_id=user.id,
+                signature_id=document_record.id,
+                original_name=file_name,
+                content_type=content_type,
+                file_data=file_bytes,
+            )
+        )
+
     db.session.commit()
 
     log_audit(
@@ -54,7 +79,49 @@ def sign_document():
         ip_address=_get_client_ip(),
     )
 
-    return jsonify({"signature": signature_b64}), 200
+    return jsonify({
+        "signature": signature_b64,
+        "document_id": str(document_record.id),
+        "download_available": bool(file_bytes),
+        "download_url": f"/api/documents/{document_record.id}/download",
+    }), 200
+
+
+@documents_bp.route("/api/documents/<document_id>/download", methods=["GET"])
+@token_required
+def download_document(document_id):
+    user = g.current_user
+
+    try:
+        doc_uuid = uuid.UUID(document_id)
+    except ValueError:
+        return jsonify({"message": "Invalid document id"}), 400
+
+    document_record = DocumentSignature.query.filter_by(id=doc_uuid, user_id=user.id).first()
+    if not document_record:
+        return jsonify({"message": "Document not found"}), 404
+
+    if document_record.stored_document:
+        stored = document_record.stored_document
+        return send_file(
+            io.BytesIO(stored.file_data),
+            download_name=stored.original_name or document_record.file_name,
+            as_attachment=True,
+            mimetype=stored.content_type or "application/octet-stream",
+        )
+
+    signature_text = "\n".join([
+        f"File Name: {document_record.file_name}",
+        f"Document Hash (SHA-256): {document_record.file_hash}",
+        f"Signature (Base64): {base64.b64encode(document_record.signature).decode('utf-8')}",
+    ])
+    filename = (document_record.file_name.rsplit('.', 1)[0] if '.' in document_record.file_name else document_record.file_name) or "document"
+    return send_file(
+        io.BytesIO(signature_text.encode("utf-8")),
+        download_name=f"{filename}_signature.txt",
+        as_attachment=True,
+        mimetype="text/plain",
+    )
 
 
 @documents_bp.route("/api/documents/verify", methods=["POST"])

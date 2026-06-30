@@ -312,6 +312,8 @@ def me():
                 "file_name": doc.file_name,
                 "file_hash": doc.file_hash,
                 "created_at": doc.created_at.isoformat(),
+                "download_available": bool(doc.stored_document),
+                "download_url": f"/api/documents/{doc.id}/download",
             }
             for doc in signed_docs
         ],

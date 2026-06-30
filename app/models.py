@@ -58,6 +58,7 @@ class User(db.Model):
     certificates       = db.relationship("Certificate",      back_populates="user", cascade="all, delete-orphan", lazy="select")
     vault_entries      = db.relationship("VaultEntry",       back_populates="user", cascade="all, delete-orphan", lazy="select")
     document_signatures = db.relationship("DocumentSignature", back_populates="user", cascade="all, delete-orphan", lazy="select")
+    stored_documents    = db.relationship("StoredDocument",   back_populates="user", cascade="all, delete-orphan", lazy="select")
     audit_logs         = db.relationship("AuditLog",         back_populates="user", cascade="all, delete-orphan", lazy="select")
 
     def __repr__(self):
@@ -112,9 +113,28 @@ class DocumentSignature(db.Model):
     created_at = db.Column(db.DateTime(timezone=True), nullable=False, default=utcnow)
 
     user = db.relationship("User", back_populates="document_signatures")
+    stored_document = db.relationship("StoredDocument", back_populates="signature", uselist=False, cascade="all, delete-orphan")
 
     def __repr__(self):
         return f"<DocumentSignature file={self.file_name}>"
+
+
+class StoredDocument(db.Model):
+    __tablename__ = "stored_document"
+
+    id           = db.Column(GUID(), primary_key=True, default=uuid.uuid4)
+    user_id      = db.Column(GUID(), db.ForeignKey("user.id"), nullable=False)
+    signature_id = db.Column(GUID(), db.ForeignKey("document_signature.id"), nullable=False, unique=True)
+    original_name = db.Column(db.String(256), nullable=False)
+    content_type = db.Column(db.String(128), nullable=False, default="application/octet-stream")
+    file_data    = db.Column(db.LargeBinary, nullable=False)
+    created_at   = db.Column(db.DateTime(timezone=True), nullable=False, default=utcnow)
+
+    user = db.relationship("User", back_populates="stored_documents")
+    signature = db.relationship("DocumentSignature", back_populates="stored_document")
+
+    def __repr__(self):
+        return f"<StoredDocument file={self.original_name}>"
 
 
 class AuditLog(db.Model):

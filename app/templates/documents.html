@@ -22,8 +22,12 @@
 
   <div>
     <form id="verify-form">
+      <label>Upload Document File</label>
+      <input type="file" id="verify-document-file" accept="*/*" />
       <label>Document Hash</label>
       <textarea id="verify-document-hash" rows="3" required placeholder="e3b0c44298fc1c149afb..."></textarea>
+      <label>Upload Signature File</label>
+      <input type="file" id="verify-signature-file" accept=".sig,.txt,*/*" />
       <label>Signature (Base64)</label>
       <textarea id="verify-signature" rows="4" required placeholder="Base64-encoded signature..."></textarea>
       <label>Signer's Certificate PEM</label>

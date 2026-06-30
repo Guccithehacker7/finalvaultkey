@@ -29,6 +29,13 @@ const computeSha256Hex = async (buffer) => {
   return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
 };
 
+const readFileAsBase64 = async (file) => {
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  let binary = '';
+  bytes.forEach((byte) => { binary += String.fromCharCode(byte); });
+  return btoa(binary);
+};
+
 /* ── Nav sync ─────────────────────────────────────────── */
 const syncNav = () => {
   const in_ = !!getToken();
@@ -258,14 +265,87 @@ const attachDashboard = () => {
 
   if (!getToken()) { window.location.href = '/login'; return; }
 
+  const vaultPanel = document.getElementById('vault-detail-panel');
+  const docsPanel = document.getElementById('docs-detail-panel');
+  const vaultList = document.getElementById('vault-detail-list');
+  const docsList = document.getElementById('docs-detail-list');
+  const cardVault = document.getElementById('card-vault');
+  const cardDocs = document.getElementById('card-docs');
+  let currentDocuments = [];
+
+  const hideDetailPanels = () => {
+    if (vaultPanel) vaultPanel.style.display = 'none';
+    if (docsPanel) docsPanel.style.display = 'none';
+  };
+
+  const renderVaultRows = (entries) => {
+    if (!vaultList) return;
+    if (!entries.length) {
+      vaultList.innerHTML = '<div class="dash-empty">No vault entries to show.</div>';
+      return;
+    }
+
+    vaultList.innerHTML = entries.map((entry) => `
+      <div class="detail-row">
+        <div class="detail-title">${escapeHtml(entry.site_name)}</div>
+        <div class="detail-meta">
+          ${entry.username_hint ? `<span>${escapeHtml(entry.username_hint)}</span>` : ''}
+          <span>${new Date(entry.created_at).toLocaleString()}</span>
+        </div>
+      </div>`).join('');
+  };
+
+  const renderDocumentRows = (docs) => {
+    if (!docsList) return;
+    if (!docs.length) {
+      docsList.innerHTML = '<div class="dash-empty">No signed documents to show.</div>';
+      return;
+    }
+
+    docsList.innerHTML = docs.map((doc) => `
+      <div class="detail-row">
+        <div class="detail-title">${escapeHtml(doc.file_name)}</div>
+        <div class="detail-meta">
+          <span>Hash: <code>${escapeHtml(doc.file_hash)}</code></span>
+          <span>Signed: ${new Date(doc.created_at).toLocaleString()}</span>
+        </div>
+        <div class="detail-actions">
+          ${doc.download_available
+            ? `<a class="btn btn-outline" href="${doc.download_url}" download="${escapeHtml(doc.file_name)}">⬇ Download</a>`
+            : '<span style="color:var(--text-2);font-size:0.8rem">No file stored</span>'}
+        </div>
+      </div>`).join('');
+  };
+
+  const loadVaultEntries = async () => {
+    if (!vaultPanel || !vaultList) return;
+    vaultPanel.style.display = 'block';
+    docsPanel && (docsPanel.style.display = 'none');
+    vaultList.innerHTML = '<div class="dash-loading">Loading vault entries…</div>';
+    try {
+      const data = await api('/api/vault', { headers: authHeaders() });
+      renderVaultRows(data.vault_entries);
+    } catch (err) {
+      vaultList.innerHTML = `<div class="error">${escapeHtml(err.message)}</div>`;
+    }
+  };
+
+  const openSignedDocuments = () => {
+    if (!docsPanel || !docsList) return;
+    docsPanel.style.display = 'block';
+    vaultPanel && (vaultPanel.style.display = 'none');
+    renderDocumentRows(currentDocuments);
+  };
+
   api('/api/auth/me', { headers: authHeaders() })
     .then((d) => {
+      currentDocuments = d.documents || [];
       setText('dash-username', d.username);
       const rolePill = document.getElementById('dash-role');
       if (rolePill) { rolePill.textContent = d.role; rolePill.className = `role-badge role-${d.role}`; }
 
       setText('stat-vault', d.stats.vault_entries);
-      setText('stat-docs',  d.stats.signed_documents);
+      setText('stat-docs', d.stats.signed_documents);
 
       if (d.certificate) {
         const expiry = new Date(d.certificate.expiry_date);
@@ -282,7 +362,6 @@ const attachDashboard = () => {
           pill.className = `cert-status-pill ${d.certificate.status === 'ACTIVE' ? 'pill-active' : 'pill-revoked'}`;
         }
 
-        // Show/hide PEM button
         const btnShow = document.getElementById('btn-show-cert');
         const pemBlock = document.getElementById('cert-pem-block');
         if (btnShow && pemBlock && d.certificate.certificate_pem) {
@@ -294,7 +373,6 @@ const attachDashboard = () => {
           });
         }
 
-        // Download certificate
         const btnDl = document.getElementById('btn-dl-cert');
         if (btnDl && d.certificate.certificate_pem) {
           btnDl.addEventListener('click', () => {
@@ -306,7 +384,6 @@ const attachDashboard = () => {
         setText('stat-cert-expiry', '—');
       }
 
-      // Recent activity
       const actEl = document.getElementById('dash-activity');
       if (actEl) {
         if (!d.recent_activity.length) {
@@ -323,21 +400,49 @@ const attachDashboard = () => {
 
       const docsEl = document.getElementById('signed-docs-list');
       if (docsEl) {
-        if (!d.documents || !d.documents.length) {
+        if (!currentDocuments || !currentDocuments.length) {
           docsEl.innerHTML = '<div class="dash-empty">No signed documents yet.</div>';
         } else {
-          docsEl.innerHTML = d.documents.map((doc) => `
+          docsEl.innerHTML = currentDocuments.map((doc) => `
             <div class="document-row">
               <div class="document-title">${escapeHtml(doc.file_name)}</div>
               <div class="document-meta">
-                <code>${escapeHtml(doc.file_hash)}</code>
-                <span>${new Date(doc.created_at).toLocaleString()}</span>
+                <div><strong>Hash:</strong> <code>${escapeHtml(doc.file_hash)}</code></div>
+                <div><strong>Signed on:</strong> ${new Date(doc.created_at).toLocaleString()}</div>
+              </div>
+              <div class="document-actions">
+                ${doc.download_available
+                  ? `<button class="btn btn-outline download-doc-btn" data-url="${doc.download_url}" data-filename="${escapeHtml(doc.file_name)}">⬇ Download</button>`
+                  : '<span style="color:var(--text-2);font-size:0.8rem">No file stored</span>'}
               </div>
             </div>`).join('');
+
+          docsEl.querySelectorAll('.download-doc-btn').forEach((btn) => {
+            btn.addEventListener('click', async () => {
+              const url = btn.dataset.url;
+              const filename = btn.dataset.filename || 'download';
+              try {
+                await downloadBlob(url, filename);
+              } catch (err) {
+                showMsg('dash-output', err.message, true);
+              }
+            });
+          });
         }
       }
 
-      // Show admin card only for admins
+      if (cardVault) {
+        cardVault.addEventListener('click', loadVaultEntries);
+      }
+      if (cardDocs) {
+        cardDocs.addEventListener('click', () => {
+          openSignedDocuments();
+          if (docsPanel) docsPanel.scrollIntoView({ behavior: 'smooth' });
+        });
+      }
+
+      hideDetailPanels();
+
       if (d.role === 'admin') {
         const ac = document.getElementById('admin-card');
         if (ac) ac.style.display = '';
@@ -552,22 +657,92 @@ const attachDocuments = () => {
       e.preventDefault();
       const fileName = fileNameInput.value.trim();
       const hash     = hashInput.value.trim();
+      const file     = fileUpload.files?.[0];
       try {
+        const fileContentBase64 = file ? await readFileAsBase64(file) : null;
         const d = await api('/api/documents/sign', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', ...authHeaders() },
-          body: JSON.stringify({ file_name: fileName, document_hash: hash }),
+          body: JSON.stringify({
+            file_name: fileName,
+            document_hash: hash,
+            file_content_base64: fileContentBase64,
+            content_type: file?.type || 'application/octet-stream',
+          }),
         });
-        showMsg('sign-output', `<strong>✅ Signature generated.</strong><pre>${escapeHtml(d.signature)}</pre>`);
+
+        const safeFileName = (fileName || 'document').trim() || 'document';
+        const signatureFileName = `${safeFileName.replace(/\.[^.]+$/, '') || 'document'}_signature.sig`;
+        const signatureContent = [
+          `File Name: ${safeFileName}`,
+          `Document Hash (SHA-256): ${hash}`,
+          `Signature (Base64): ${d.signature}`,
+          `Generated At: ${new Date().toISOString()}`,
+        ].join('\n');
+
+        const documentDownloadHtml = d.download_available
+          ? `<button id="download-document-btn" type="button" class="btn-full" style="margin-bottom:10px;background:var(--surface-3);color:var(--text);border:1px solid var(--border-hi)">⬇ Download Uploaded File</button>`
+          : '';
+
+        showMsg('sign-output', `
+          <strong>✅ Signature generated.</strong>
+          <p style="margin:8px 0 10px;">Download the signature bundle below.</p>
+          ${documentDownloadHtml}
+          <button id="download-signature-btn" type="button" class="btn-full" style="margin-bottom:10px;">⬇ Download Signature File</button>
+          <pre>${escapeHtml(signatureContent)}</pre>`);
+
+        document.getElementById('download-signature-btn')?.addEventListener('click', () => {
+          downloadText(signatureFileName, signatureContent);
+        });
+        document.getElementById('download-document-btn')?.addEventListener('click', async () => {
+          try {
+            await downloadBlob(d.download_url, fileName);
+          } catch (err) {
+            showMsg('sign-output', err.message, true);
+          }
+        });
       } catch (err) { showMsg('sign-output', err.message, true); }
     });
   }
 
   if (verifyForm) {
+    const verifyDocumentFile = document.getElementById('verify-document-file');
+    const verifySignatureFile = document.getElementById('verify-signature-file');
+    const verifyHashInput = document.getElementById('verify-document-hash');
+    const verifySignatureInput = document.getElementById('verify-signature');
+
+    if (verifyDocumentFile && verifyHashInput) {
+      verifyDocumentFile.addEventListener('change', async () => {
+        const file = verifyDocumentFile.files?.[0];
+        if (!file) return;
+        try {
+          const hashHex = await computeSha256Hex(await file.arrayBuffer());
+          verifyHashInput.value = hashHex;
+          showMsg('verify-output', `Document hash computed from ${file.name}.`);
+        } catch (err) {
+          showMsg('verify-output', `Failed to compute file hash: ${err.message}`, true);
+        }
+      });
+    }
+
+    if (verifySignatureFile && verifySignatureInput) {
+      verifySignatureFile.addEventListener('change', async () => {
+        const file = verifySignatureFile.files?.[0];
+        if (!file) return;
+        try {
+          const text = await file.text();
+          verifySignatureInput.value = text.trim();
+          showMsg('verify-output', `Signature loaded from ${file.name}.`);
+        } catch (err) {
+          showMsg('verify-output', `Failed to read signature file: ${err.message}`, true);
+        }
+      });
+    }
+
     verifyForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const hash    = document.getElementById('verify-document-hash').value.trim();
-      const sig     = document.getElementById('verify-signature').value.trim();
+      const hash    = verifyHashInput.value.trim();
+      const sig     = verifySignatureInput.value.trim();
       const certPem = document.getElementById('verify-certificate-pem').value.trim();
       try {
         const d = await api('/api/documents/verify', {
@@ -632,7 +807,27 @@ const downloadText = (filename, text) => {
   a.download = filename;
   a.click();
 };
+
+const downloadBlob = async (url, filename) => {
+  const res = await fetch(url, { headers: authHeaders() });
+  if (!res.ok) {
+    let message = `Download failed (${res.status})`;
+    try { const data = await res.json(); if (data.message) message = data.message; } catch {};
+    throw new Error(message);
+  }
+  const blob = await res.blob();
+  const objectUrl = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = objectUrl;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(objectUrl);
+};
+
 window.downloadText = downloadText;
+window.downloadBlob = downloadBlob;
 
 /* ── Boot ─────────────────────────────────────────────── */
 const boot = () => {
