@@ -23,6 +23,12 @@ const api = async (url, opts = {}) => {
 const authHeaders = () => ({ Authorization: `Bearer ${getToken()}` });
 const jsonHeaders = () => ({ 'Content-Type': 'application/json', ...authHeaders() });
 
+const computeSha256Hex = async (buffer) => {
+  const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
+};
+
 /* ── Nav sync ─────────────────────────────────────────── */
 const syncNav = () => {
   const in_ = !!getToken();
@@ -211,9 +217,25 @@ const attachLogin = () => {
 
   // Certificate login
   if (formCert) {
+    const certUpload = document.getElementById('certificate-file-upload');
+    const certPemInput = document.getElementById('certificate-pem');
+
+    if (certUpload && certPemInput) {
+      certUpload.addEventListener('change', async () => {
+        const file = certUpload.files?.[0];
+        if (!file) return;
+        try {
+          const text = await file.text();
+          certPemInput.value = text.trim();
+        } catch (err) {
+          showMsg('login-output', `Failed to read certificate file: ${err.message}`, true);
+        }
+      });
+    }
+
     formCert.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const certPem = document.getElementById('certificate-pem').value.trim();
+      const certPem = certPemInput?.value.trim() || '';
       try {
         const data = await api('/api/auth/login', {
           method: 'POST',
@@ -295,6 +317,22 @@ const attachDashboard = () => {
               <span class="activity-badge ${log.status === 'SUCCESS' ? 'badge-ok' : 'badge-fail'}">${escapeHtml(log.status)}</span>
               <span class="activity-action">${escapeHtml(log.action)}</span>
               <span class="activity-time">${new Date(log.timestamp).toLocaleString()}</span>
+            </div>`).join('');
+        }
+      }
+
+      const docsEl = document.getElementById('signed-docs-list');
+      if (docsEl) {
+        if (!d.documents || !d.documents.length) {
+          docsEl.innerHTML = '<div class="dash-empty">No signed documents yet.</div>';
+        } else {
+          docsEl.innerHTML = d.documents.map((doc) => `
+            <div class="document-row">
+              <div class="document-title">${escapeHtml(doc.file_name)}</div>
+              <div class="document-meta">
+                <code>${escapeHtml(doc.file_hash)}</code>
+                <span>${new Date(doc.created_at).toLocaleString()}</span>
+              </div>
             </div>`).join('');
         }
       }
@@ -492,10 +530,28 @@ const attachDocuments = () => {
   const verifyForm = document.getElementById('verify-form');
 
   if (signForm) {
+    const fileUpload = document.getElementById('sign-file-upload');
+    const fileNameInput = document.getElementById('sign-file-name');
+    const hashInput = document.getElementById('sign-document-hash');
+
+    if (fileUpload) {
+      fileUpload.addEventListener('change', async () => {
+        const file = fileUpload.files?.[0];
+        if (!file) return;
+        fileNameInput.value = file.name;
+        try {
+          const hashHex = await computeSha256Hex(await file.arrayBuffer());
+          hashInput.value = hashHex;
+        } catch (err) {
+          showMsg('sign-output', `Failed to compute file hash: ${err.message}`, true);
+        }
+      });
+    }
+
     signForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const fileName = document.getElementById('sign-file-name').value.trim();
-      const hash     = document.getElementById('sign-document-hash').value.trim();
+      const fileName = fileNameInput.value.trim();
+      const hash     = hashInput.value.trim();
       try {
         const d = await api('/api/documents/sign', {
           method: 'POST',

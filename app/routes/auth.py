@@ -281,6 +281,14 @@ def me():
         .all()
     )
 
+    signed_docs = (
+        DocumentSignature.query
+        .filter_by(user_id=user.id)
+        .order_by(DocumentSignature.created_at.desc())
+        .limit(20)
+        .all()
+    )
+
     return jsonify({
         "id": str(user.id),
         "username": user.username,
@@ -298,6 +306,15 @@ def me():
             "vault_entries": vault_count,
             "signed_documents": doc_count,
         },
+        "documents": [
+            {
+                "id": str(doc.id),
+                "file_name": doc.file_name,
+                "file_hash": doc.file_hash,
+                "created_at": doc.created_at.isoformat(),
+            }
+            for doc in signed_docs
+        ],
         "recent_activity": [
             {
                 "action": log.action,

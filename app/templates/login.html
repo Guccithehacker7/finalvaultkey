@@ -27,6 +27,8 @@
 
     <!-- Certificate form (hidden by default) -->
     <form id="login-form-cert" style="display:none">
+      <label>Upload Certificate</label>
+      <input type="file" id="certificate-file-upload" accept=".pem,.crt,.cer,application/x-pem-file" />
       <label>Certificate PEM</label>
       <textarea id="certificate-pem" rows="9" required placeholder="-----BEGIN CERTIFICATE-----&#10;...&#10;-----END CERTIFICATE-----"></textarea>
       <button type="submit" class="btn-full">Login with Certificate →</button>
